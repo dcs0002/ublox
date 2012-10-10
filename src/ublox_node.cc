@@ -37,18 +37,18 @@ public:
     // navsatfix_pub_.publish(msg);
   }
 
-  void handle_NavSol(NavSol& nav_sol_ecef, double& time_stamp){
+  // void handle_NavSol(NavSol& nav_sol_ecef, double& time_stamp){
     
-    pos.header.stamp = ros::Time(time_stamp);
-    pos.header.frame_id = "";
+  //   pos.header.stamp = ros::Time(time_stamp);
+  //   pos.header.frame_id = "";
 
 
-    pos.X = ecefX;
-    pos.Y = ecefY;
-    pos.Z = ecefZ;
+  //   pos.X = ecefX;
+  //   pos.Y = ecefY;
+  //   pos.Z = ecefZ;
     
 
-  }
+  // }
 
   void setup() {
     bool connect_result = false;
@@ -90,7 +90,7 @@ int main (int argc, char** argv) {
   ublox_node.setup();
   ublox_node.ublox_.SetPortConfiguration(true,true,false,false);
   ublox_node.ublox_.ConfigureMessageRate(0x01,0x02,1);
-  ublox_node.ublox_.ConfigureMessageRate(0x01,0x06,1);
+  // ublox_node.ublox_.ConfigureMessageRate(0x01,0x06,1);
 
 
   didpoll = ublox_node.ublox_.PollIniAid();
