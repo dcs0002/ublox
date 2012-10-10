@@ -274,8 +274,8 @@ bool Ublox::Ping(int num_attempts) {
         size_t bytes_read;
         bytes_read=serial_port_->read(result, 5000);
 
-        //std::cout << "bytes read: " << (int)bytes_read << std::endl;
-        //std::cout << dec << result << std::endl;
+        // std::cout << "bytes read: " << (int)bytes_read << std::endl;
+        // std::cout << dec << result << std::endl;
 
         if (bytes_read<8) {
             stringstream output;
@@ -341,6 +341,8 @@ void Ublox::StartReading() {
     reading_status_=true;
     read_thread_ptr_ = boost::shared_ptr<boost::thread >
         (new boost::thread(boost::bind(&Ublox::ReadSerialPort, this)));
+
+        std::cout << "..." << std::endl;
 }
 
 void Ublox::StopReading() {
@@ -359,6 +361,8 @@ void Ublox::ReadSerialPort() {
         read_timestamp_ = time_handler_();
         // add data to the buffer to be parsed
         BufferIncomingData(buffer, len);
+
+        // std::cout << "read" << std::endl;
     }
 
 }
@@ -579,6 +583,8 @@ void Ublox::SetPortConfiguration(bool ubx_input, bool ubx_output, bool nmea_inpu
     message.header.message_id=0x00;
     message.header.payload_length=20;
 
+    // std::cout << "..." << std::endl;
+
     message.port_id=3;          //Port identifier for USB Port (3)
     message.reserved=0;
     message.tx_ready=0;
@@ -637,6 +643,8 @@ void Ublox::PollPortConfiguration(uint8_t port_identifier)
 
     unsigned char* msg_ptr = (unsigned char*)&message;
     calculateCheckSum(msg_ptr+2,5,msg_ptr+7);
+
+    // std::cout << "..." << std::endl;
 
     serial_port_->write(msg_ptr, sizeof(message));
     log_info_("Polling for Port Protocol Configuration.");
@@ -772,7 +780,7 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 
 	for (unsigned int i=0; i<length; i++)
 	{
-        //cout << i << ": " << hex << (int)msg[i] << dec << endl;
+        // cout << i << ": " << hex << (int)msg[i] << dec << endl;
         // make sure buffer_index_ is not larger than buffer
         if (buffer_index_>=MAX_NOUT_SIZE)
 		{
@@ -784,9 +792,10 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 
         if (buffer_index_==0)
 		{	// looking for beginning of message
+            // cout << "..." << endl;
 			if (msg[i]==0xB5)
 			{	// beginning of msg found - add to buffer
-                //cout << "got first bit" << endl;
+                cout << "got first bit" << endl;
                 data_buffer_[buffer_index_++]=msg[i];
                 bytes_remaining_=0;
 			}	// end if (msg[i]
@@ -795,7 +804,7 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 		{	// verify 2nd character of header
 			if (msg[i]==0x62)
 			{	// 2nd byte ok - add to buffer
-                //cout << " got second synch bit" << endl;
+                cout << " got second synch bit" << endl;
                 data_buffer_[buffer_index_++]=msg[i];
 			}
 			else
@@ -819,7 +828,7 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 
                 if (msg[i+1]==0x01) // ACK Message
                 {
-                   //std::cout << "Receiver Acknowledged Message " << std::endl;
+                   std::cout << "Receiver Acknowledged Message " << std::endl;
                     //printf("0x%.2X ", (unsigned)class_id);
                     //std::cout << " ";
                     //printf("0x%.2X ", (unsigned)msg_id);
@@ -829,7 +838,7 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 
                 else if (msg[i+1]==0x00)    // NAK Message
                 {
-                    //std::cout << "Receiver Did Not Acknowledged Message " << std::endl;
+                    std::cout << "Receiver Did Not Acknowledged Message " << std::endl;
                      //printf("0x%.2X ", (unsigned)class_id);
                      //std::cout << " ";
                      //printf("0x%.2X ", (unsigned)msg_id);
@@ -896,6 +905,8 @@ void Ublox::BufferIncomingData(uint8_t *msg, size_t length)
 void Ublox::ParseLog(uint8_t *log, size_t logID)
 {
     double length;
+
+    std::cout << "..." << std::endl;
 
 
 	switch (logID)

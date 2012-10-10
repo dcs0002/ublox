@@ -21,7 +21,9 @@ public:
   void handle_NavPosLLH(NavPosLLH& nav_pos_llh, double& time_stamp) {
     sensor_msgs::NavSatFix msg;
     msg.header.stamp = ros::Time(time_stamp);
-    msg.header.frame_id = "/ublox";
+    // msg.header.stamp = ros::Time::now();
+    // msg.header.frame_id = "/ublox";
+     msg.header.frame_id = "";
 
     // See: http://www.ros.org/doc/api/sensor_msgs/html/msg/NavSatFix.html
     msg.status.status = 0; // GPS_FIX
@@ -32,6 +34,20 @@ public:
     msg.altitude = nav_pos_llh.height / 1000.0f;
 
     this->navsatfix_pub_.publish(msg);
+    // navsatfix_pub_.publish(msg);
+  }
+
+  void handle_NavSol(NavSol& nav_sol_ecef, double& time_stamp){
+    
+    pos.header.stamp = ros::Time(time_stamp);
+    pos.header.frame_id = "";
+
+
+    pos.X = ecefX;
+    pos.Y = ecefY;
+    pos.Z = ecefZ;
+    
+
   }
 
   void setup() {
@@ -48,30 +64,41 @@ public:
   }
 
   void getROSParameters() {
-    nh_.param<std::string>("port", port_, "/dev/ttyACM0");
-    nh_.param<int>("baudrate", baudrate_, 115200);
+    nh_.param<std::string>("port", port_, "/dev/uBlox");
+    nh_.param<int>("baudrate", baudrate_, 9600);
   }
 
   void configureROSCommunications() {
-    navsatfix_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("fix", 1000);
+    navsatfix_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("fix", 1);
   }
-
+ublox::Ublox ublox_;
 private:
   ros::NodeHandle nh_;
   string port_;
   int baudrate_;
   ros::Publisher navsatfix_pub_;
 
-  ublox::Ublox ublox_;
+  
 };
 
-int main (int argc, char **argv) {
+bool didpoll;
+
+int main (int argc, char** argv) {
   ros::init(argc, argv, "ublox_node");
 
   UbloxNode ublox_node;
   ublox_node.setup();
+  ublox_node.ublox_.SetPortConfiguration(true,true,false,false);
+  ublox_node.ublox_.ConfigureMessageRate(0x01,0x02,1);
+  ublox_node.ublox_.ConfigureMessageRate(0x01,0x06,1);
+
+
+  didpoll = ublox_node.ublox_.PollIniAid();
+
 
   ros::spin();
+
+
 
   return 0;
 }
