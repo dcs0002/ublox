@@ -64,7 +64,7 @@ public:
   }
 
   void getROSParameters() {
-    nh_.param<std::string>("port", port_, "/dev/uBlox");
+    nh_.param<std::string>("port", port_, "/dev/ttyACM0");
     nh_.param<int>("baudrate", baudrate_, 9600);
   }
 
