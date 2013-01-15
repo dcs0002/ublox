@@ -996,66 +996,104 @@ void Ublox::ParseLog(uint8_t *log, size_t logID)
 
         case AID_EPH:
             EphemSV cur_ephem_sv;
-            // determine length of log to see if it contains satellite
-            // information or just the header
-            length = (double) *(log+4);
 
-            //std::cout << "log length: " << length << std::endl;
+        length = (((uint16_t) *(log+5)) << 8) + ((uint16_t) *(log+4));
 
-            // If Ephemeris for SV is not present (length is 8 bytes)
-            if (length == 8){
-                // nothing to parse - no ephemerides for this satellite
-                //std::cout << "SV# " << (double) *(log+6) << "- no ephemeris" << std::endl;
-                memcpy(&cur_ephem_sv, log, 10+sizeof(UbloxHeader));  // doesn't this leave off checksum???
+        //printHex((char*) &cur_ephem_sv, sizeof(cur_ephem_sv));
+        memcpy(&cur_ephem_sv, log, length+6);
 
-                // make sure function pointer is set and call callback
-                if (aid_eph_callback_)
-                    aid_eph_callback_(cur_ephem_sv, read_timestamp_);
-            }
-            // If Ephemeris for SV is present (length is 104 bytes)
-            else if (length == 104){
-                memcpy(&cur_ephem_sv, log, sizeof(cur_ephem_sv));
-
-                //printHex((char*) &cur_ephem_sv, sizeof(cur_ephem_sv));
-
-                // Store each SV's ephemeris message in a structure
-                //cur_ephemerides.ephemsv[cur_ephem_sv.svprn] = cur_ephem_sv;
-
-                // make sure function pointer is set and call callback
-                if (aid_eph_callback_)
-                    aid_eph_callback_(cur_ephem_sv, read_timestamp_);
+        // If Ephemeris for SV is not present (length is 8 bytes)
+        if (length == 8)
+        {
+            //stringstream output;
+            //output << "SV# " << (int) *(log+6) << "- no ephemeris data";
+            //log_debug_(output.str());
+        }
+        // If Ephemeris for SV is present (length is 104 bytes)
+        else if (length == 104)
+        {
+            //stringstream output;
+            //output << "SV# " << (int) *(log+6) << "- has ephemeris data";
+            //log_debug_(output.str());
+            if (parsed_ephem_callback_) {
+                ParsedEphemData parsed_ephem = Parse_aid_eph(cur_ephem_sv);
+                parsed_ephem_callback_(parsed_ephem, read_timestamp_);
             }
 
-            else{
-                log_error_("Error! AID-EPH log payload is not a valid length! (See ParseLog case AID_EPH)");
-            }
+        }
+        else
+        {
+            log_error_("Error! AID-EPH log payload is not a valid length! (See ParseLog case AID_EPH)");
+        }
 
-            /*
+        // make sure function pointer is set and call callback
+        if (aid_eph_callback_)
+            aid_eph_callback_(cur_ephem_sv, read_timestamp_);
+
+        
+        
+
+            // EphemSV cur_ephem_sv;
+            // // determine length of log to see if it contains satellite
+            // // information or just the header
+            // length = (double) *(log+4);
+
+            // //std::cout << "log length: " << length << std::endl;
+
+            // // If Ephemeris for SV is not present (length is 8 bytes)
+            // if (length == 8){
+            //     // nothing to parse - no ephemerides for this satellite
+            //     //std::cout << "SV# " << (double) *(log+6) << "- no ephemeris" << std::endl;
+            //     memcpy(&cur_ephem_sv, log, 10+sizeof(UbloxHeader));  // doesn't this leave off checksum???
+
+            //     // make sure function pointer is set and call callback
+            //     if (aid_eph_callback_)
+            //         aid_eph_callback_(cur_ephem_sv, read_timestamp_);
+            // }
+            // // If Ephemeris for SV is present (length is 104 bytes)
+            // else if (length == 104){
+            //     memcpy(&cur_ephem_sv, log, sizeof(cur_ephem_sv));
+
+            //     //printHex((char*) &cur_ephem_sv, sizeof(cur_ephem_sv));
+
+            //     // Store each SV's ephemeris message in a structure
+            //     //cur_ephemerides.ephemsv[cur_ephem_sv.svprn] = cur_ephem_sv;
+
+            //     // make sure function pointer is set and call callback
+            //     if (aid_eph_callback_)
+            //         aid_eph_callback_(cur_ephem_sv, read_timestamp_);
+            // }
+
+            // else{
+            //     log_error_("Error! AID-EPH log payload is not a valid length! (See ParseLog case AID_EPH)");
+            //}
+
+            
             //Display Parsed Eph Data:
-            cout << "PRN: " << parsed_ephem_data.prn << std::endl;
-            cout << "T_GD: " << parsed_ephem_data.tgd << std::endl;
-            cout << "t_oc: " << parsed_ephem_data.toc << std::endl;
-            cout << "af0: " << parsed_ephem_data.af0 << std::endl;
-            cout << "af1: " << parsed_ephem_data.af1 << std::endl;
-            cout << "af2: " << parsed_ephem_data.af2 << std::endl;
-            cout << "M_0: " << parsed_ephem_data.anrtime << std::endl;
-            cout << "deltan: " << parsed_ephem_data.dN << std::endl;
-            cout << "ecc: " << parsed_ephem_data.ecc << std::endl;
-            cout << "sqrtA: " << parsed_ephem_data.majaxis << std::endl;
-            cout << "OMEGA_0: " << parsed_ephem_data.wo << std::endl;
-            cout << "i_0: " << parsed_ephem_data.ia << std::endl;
-            cout << "Omega: " << parsed_ephem_data.omega << std::endl;
-            cout << "Omega dot: " << parsed_ephem_data.dwo << std::endl;
-            cout << "IDOT: " << parsed_ephem_data.dia << std::endl;
-            cout << "C_uc: " << parsed_ephem_data.cuc << std::endl;
-            cout << "C_us: " << parsed_ephem_data.cus << std::endl;
-            cout << "C_rc: " << parsed_ephem_data.crc << std::endl;
-            cout << "C_rs: " << parsed_ephem_data.crs << std::endl;
-            cout << "C_is: " << parsed_ephem_data.cis << std::endl;
-            cout << "t_oe: " << parsed_ephem_data.toe << std::endl;
-            cout << "----------------------------------" << std::endl;
-            cout << std::endl;
-            */
+            // cout << "PRN: " << parsed_ephem_data.prn << std::endl;
+            // cout << "T_GD: " << parsed_ephem_data.tgd << std::endl;
+            // cout << "t_oc: " << parsed_ephem_data.toc << std::endl;
+            // cout << "af0: " << parsed_ephem_data.af0 << std::endl;
+            // cout << "af1: " << parsed_ephem_data.af1 << std::endl;
+            // cout << "af2: " << parsed_ephem_data.af2 << std::endl;
+            // cout << "M_0: " << parsed_ephem_data.anrtime << std::endl;
+            // cout << "deltan: " << parsed_ephem_data.dN << std::endl;
+            // cout << "ecc: " << parsed_ephem_data.ecc << std::endl;
+            // cout << "sqrtA: " << parsed_ephem_data.majaxis << std::endl;
+            // cout << "OMEGA_0: " << parsed_ephem_data.wo << std::endl;
+            // cout << "i_0: " << parsed_ephem_data.ia << std::endl;
+            // cout << "Omega: " << parsed_ephem_data.omega << std::endl;
+            // cout << "Omega dot: " << parsed_ephem_data.dwo << std::endl;
+            // cout << "IDOT: " << parsed_ephem_data.dia << std::endl;
+            // cout << "C_uc: " << parsed_ephem_data.cuc << std::endl;
+            // cout << "C_us: " << parsed_ephem_data.cus << std::endl;
+            // cout << "C_rc: " << parsed_ephem_data.crc << std::endl;
+            // cout << "C_rs: " << parsed_ephem_data.crs << std::endl;
+            // cout << "C_is: " << parsed_ephem_data.cis << std::endl;
+            // cout << "t_oe: " << parsed_ephem_data.toe << std::endl;
+            // cout << "----------------------------------" << std::endl;
+            // cout << std::endl;
+            
 
 
             break;
@@ -1356,7 +1394,6 @@ ParsedEphemData Ublox::Parse_aid_eph(EphemSV ubx_eph)
 
      return (eph_data);
 };
-
 
 
 

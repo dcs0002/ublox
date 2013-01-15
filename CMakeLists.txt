@@ -52,7 +52,7 @@ if(BUILD_WITH_ROS)
   rosbuild_init()
 
   #uncomment if you have defined messages
-  #rosbuild_genmsg()
+  rosbuild_genmsg()
   #uncomment if you have defined services
   #rosbuild_gensrv()
 else(BUILD_WITH_ROS)
