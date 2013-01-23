@@ -22,14 +22,16 @@ public:
   UbloxNode() : nh_("~"), port_("") {
     this->getROSParameters();
     this->configureROSCommunications();
+    this->now_ = ros::Time(0);
   }
   ~UbloxNode() {
 
   }
 
   void handle_NavPosLLH(NavPosLLH& nav_pos_llh, double& time_stamp) {
+    this->now_ = ros::Time::now();
     sensor_msgs::NavSatFix msg;
-    msg.header.stamp = ros::Time::now();
+    msg.header.stamp = this->now_;
     // msg.header.stamp = nav_pos_llh.iTOW;
     // msg.header.frame_id = "/ublox";
      msg.header.frame_id = "";
@@ -59,7 +61,7 @@ public:
 
     ublox::GPSFix msg;
     
-    msg.header.stamp = ros::Time::now();
+    msg.header.stamp = this->now_;
     msg.header.frame_id = "";
     msg.time = nav_sol_ecef.iTOW;
     msg.pdop = nav_sol_ecef.pDop;
@@ -80,7 +82,7 @@ public:
 
     ublox::Velned msg;
 
-    msg.header.stamp = ros::Time::now();
+    msg.header.stamp = this->now_;
 
     msg.VelN = nav_vel_ned.velocity_north;
     msg.VelE = nav_vel_ned.velocity_east;
@@ -98,7 +100,7 @@ public:
 
     ublox::raw msg;
 
-    msg.header.stamp = ros::Time::now();
+    msg.header.stamp = this->now_;
     msg.header.frame_id = "";
 
 
@@ -122,7 +124,7 @@ public:
 
     ublox::Ephem msg;
 
-    msg.header.stamp = ros::Time::now();
+    msg.header.stamp = this->now_;
     msg.header.frame_id = "";
 
     msg.ParsedEphemData.prn = (double) gps_ephem.prn;
@@ -201,6 +203,7 @@ public:
 ublox::Ublox ublox_;
 private:
   ros::NodeHandle nh_;
+  ros::Time now_;
   string port_;
   int baudrate_;
   ros::Publisher navsatfix_pub_;
