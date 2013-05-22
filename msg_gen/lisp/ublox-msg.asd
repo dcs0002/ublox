@@ -13,6 +13,8 @@
     (:file "_package_Ephem" :depends-on ("_package"))
     (:file "Velned" :depends-on ("_package_Velned"))
     (:file "_package_Velned" :depends-on ("_package"))
+    (:file "navSol" :depends-on ("_package_navSol"))
+    (:file "_package_navSol" :depends-on ("_package"))
     (:file "rawmeasreap" :depends-on ("_package_rawmeasreap"))
     (:file "_package_rawmeasreap" :depends-on ("_package"))
     (:file "GPSStatus" :depends-on ("_package_GPSStatus"))

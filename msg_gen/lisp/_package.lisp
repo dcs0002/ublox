@@ -9,6 +9,8 @@
    "EPHEM"
    "<VELNED>"
    "VELNED"
+   "<NAVSOL>"
+   "NAVSOL"
    "<RAWMEASREAP>"
    "RAWMEASREAP"
    "<GPSSTATUS>"

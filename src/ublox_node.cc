@@ -22,14 +22,14 @@ public:
   UbloxNode() : nh_("~"), port_("") {
     this->getROSParameters();
     this->configureROSCommunications();
-    this->now_ = ros::Time(0);
+    this->now_ = ros::Time::now();
   }
   ~UbloxNode() {
 
   }
 
   void handle_NavPosLLH(NavPosLLH& nav_pos_llh, double& time_stamp) {
-    this->now_ = ros::Time::now();
+    // this->now_ = ros::Time::now();
     sensor_msgs::NavSatFix msg;
     msg.header.stamp = this->now_;
     // msg.header.stamp = nav_pos_llh.iTOW;
@@ -60,7 +60,7 @@ public:
   void handle_NavSol(NavSol& nav_sol_ecef, double& time_stamp){
 
     ublox::GPSFix msg;
-    
+    this->now_ = ros::Time::now();
     msg.header.stamp = this->now_;
     msg.header.frame_id = "";
     msg.time = nav_sol_ecef.iTOW;
@@ -229,10 +229,11 @@ int main (int argc, char** argv) {
   ublox_node.ublox_.ConfigureMessageRate(0x01,0x12,1);
   ublox_node.ublox_.ConfigureMessageRate(0x02,0x10,1);
   ublox_node.ublox_.ConfigureMessageRate(0x0B,0x31,1);
-
+  ublox_node.ublox_.ConfigureNavigationParameters(2,3);
 
   didpoll = ublox_node.ublox_.PollIniAid();
-
+  didpoll = ublox_node.ublox_.PollNavigationParamterConfiguration();
+  didpoll = ublox_node.ublox_.PollEphem();
 
   ros::spin();
 
