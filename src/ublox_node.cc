@@ -34,7 +34,7 @@ public:
     msg.header.stamp = this->now_;
     // msg.header.stamp = nav_pos_llh.iTOW;
     // msg.header.frame_id = "/ublox";
-     msg.header.frame_id = "";
+    msg.header.frame_id = "";
 
     // See: http://www.ros.org/doc/api/sensor_msgs/html/msg/NavSatFix.html
     msg.status.status = 0; // GPS_FIX
